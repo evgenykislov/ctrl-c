@@ -26,32 +26,33 @@ SOFTWARE.
 #include <condition_variable>
 #include <mutex>
 
-#include <ctrl-c.h>
+#include "../src/ctrl-c.h"
 
 int main()
 {
   std::mutex wait_lock;
   std::condition_variable wait_var;
-  bool to_stop = false;
+  const unsigned int kMaxCatches = 3;
+  unsigned int catches = 0;
 
-  unsigned int handler_id = CtrlCLibrary::SetCtrlCHandler([&to_stop, &wait_lock, &wait_var](enum CtrlCLibrary::CtrlSignal event) -> bool {
+  unsigned int handler_id = CtrlCLibrary::SetCtrlCHandler([&catches, &wait_lock, &wait_var](enum CtrlCLibrary::CtrlSignal event) -> bool {
     switch (event) {
       case CtrlCLibrary::kCtrlCSignal:
         std::cout << "Catch Ctrl+C" << std::endl;
     }
     std::lock_guard<std::mutex> locker(wait_lock);
-    to_stop = true;
+    ++catches;
     wait_var.notify_all();
     return true;
   });
   if (handler_id == CtrlCLibrary::kErrorID) {
-    // Can't set handler (OS error, etc)
+    std::cerr << "Can't set ctrl+c handler" << std::endl;
     return 0;
   }
-
+  std::cout << "Press Ctrl+C " << kMaxCatches << " times" << std::endl;
   std::unique_lock<std::mutex> locker(wait_lock);
-  wait_var.wait(locker, [&to_stop](){
-    return to_stop;
+  wait_var.wait(locker, [&catches, kMaxCatches](){
+    return catches >= kMaxCatches;
   });
   CtrlCLibrary::ResetCtrlCHandler(handler_id);
   return 0;

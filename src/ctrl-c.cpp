@@ -22,12 +22,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+// Detect platform
+#if defined(linux) || defined(__linux) || defined(__linux__)
+#define LINUX_PLATFORM
+#elif defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+#define WINDOWS_PLATFORM
+#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
+#define MACOS_PLATFORM
+#else
+#error Unknown platform
+#endif
+
 #include <algorithm>
 #include <mutex>
 #include <list>
 
+#ifdef LINUX_PLATFORM
+#include <signal.h>
+#endif
 
+#ifdef WINDOWS_PLATFORM
 #include <Windows.h>
+#endif
+
+#ifdef MACOS_PLATFORM
+#endif
 
 #include "ctrl-c.h"
 
@@ -107,9 +126,51 @@ namespace CtrlCLibrary {
     return false;
   }
 
-  // Windows implementation
+// --------------------
+// Linux implementation
+// Macos implementation
+  #if defined(LINUX_PLATFORM) || defined(MACOS_PLATFORM)
 
-  BOOL WINAPI windows_catcher(_In_ DWORD dwCtrlType) {
+  void LinuxCatcher(int sig) {
+    enum CtrlSignal event;
+    switch (sig) {
+      case SIGINT:
+        event = kCtrlCSignal;
+        break;
+      default:
+        return;
+    }
+    EventFunction(event);
+  }
+
+  bool SetSignalCatcher() {
+    struct sigaction action;
+    action.sa_handler = LinuxCatcher;
+    sigemptyset(&action.sa_mask);
+    action.sa_flags = 0;
+    if (sigaction(SIGINT, &action, nullptr) == 0)
+    {
+      return true;
+    }
+    ResetSignalCatcher();
+    return false;
+  }
+
+  void ResetSignalCatcher() {
+    struct sigaction action;
+    action.sa_handler = SIG_DFL;
+    sigemptyset(&action.sa_mask);
+    action.sa_flags = 0;
+    sigaction(SIGINT, &action, nullptr);
+  }
+
+  #endif
+
+// --------------------
+// Windows implementation
+  #ifdef WINDOWS_PLATFORM
+
+  BOOL WINAPI WindowsCatcher(_In_ DWORD dwCtrlType) {
     enum CtrlSignal event;
     switch (dwCtrlType) {
       case CTRL_C_EVENT:
@@ -122,12 +183,13 @@ namespace CtrlCLibrary {
   }
 
   bool SetSignalCatcher() {
-    return SetConsoleCtrlHandler(windows_catcher, TRUE) != 0;
+    return SetConsoleCtrlHandler(WindowsCatcher, TRUE) != 0;
   }
 
   void ResetSignalCatcher() {
-    SetConsoleCtrlHandler(windows_catcher, FALSE);
+    SetConsoleCtrlHandler(WindowsCatcher, FALSE);
   }
 
+  #endif
 
 };
