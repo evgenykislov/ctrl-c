@@ -46,6 +46,7 @@ SOFTWARE.
 #endif
 
 #ifdef MACOS_PLATFORM
+#include <signal.h>
 #endif
 
 #include "ctrl-c.h"
