@@ -6,19 +6,19 @@ Supports Windows, Linux and Mac OS X.
 ## Getting Started
 
 To catch Ctrl+C event/signal you should call:
-
-    unsigned int CtrlCLibrary::SetCtrlCHandler(std::function<bool(enum CtrlCLibrary::CtrlSignal)> handler);
-
-handler - custom handler;
+```cpp
+unsigned int CtrlCLibrary::SetCtrlCHandler(std::function<bool(enum CtrlCLibrary::CtrlSignal)> handler);
+```
+> handler - custom handler;
 
 **Return**:
 Returns handler identifier, or CtrlCLibrary::kErrorID in case of error.
 
 To remove handler you should call:
-
-    void CtrlCLibrary::ResetCtrlCHandler(unsigned int id);
-
-id - handler identifier, returned by CtrlCLibrary::SetCtrlCHandler.
+```cpp
+void CtrlCLibrary::ResetCtrlCHandler(unsigned int id);
+```
+> id - handler identifier, returned by CtrlCLibrary::SetCtrlCHandler.
 
 ### Installing
 
@@ -28,6 +28,14 @@ You should copy source files (src/ctrl-c.h, src/ctrl-c.cpp) to your project.
 
 Source file test/main.cpp contains example of usage Ctrl+C code.
 You can compile the example by your favourite C++ compiler.
+
+- ### Exit on Ctrl+C signal
+    ```cpp
+    CtrlCLibrary::SetCtrlCHandler([](enum CtrlCLibrary::CtrlSignal s) {
+        std::exit(0);
+        return true;
+    });
+    ```
 
 ## Authors
 
