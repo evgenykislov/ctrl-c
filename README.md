@@ -7,7 +7,7 @@ Supports Windows, Linux and Mac OS X.
 
 To catch Ctrl+C event/signal you should call:
 
-    unsigned int CtrlCLibrary::SetCtrlCHandler(std::function<bool(enum CtrlSignal)> handler);
+    unsigned int CtrlCLibrary::SetCtrlCHandler(std::function<bool(enum CtrlCLibrary::CtrlSignal)> handler);
 
 handler - custom handler;
 
