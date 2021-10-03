@@ -6,18 +6,18 @@ Supports Windows, Linux and Mac OS X.
 ## Getting Started
 
 To catch Ctrl+C event/signal you should call:
-
-    unsigned int CtrlCLibrary::SetCtrlCHandler(std::function<bool(enum CtrlSignal)> handler);
-
+```cpp
+unsigned int CtrlCLibrary::SetCtrlCHandler(std::function<bool(enum CtrlCLibrary::CtrlSignal)> handler);
+```
 handler - custom handler;
 
 **Return**:
 Returns handler identifier, or CtrlCLibrary::kErrorID in case of error.
 
 To remove handler you should call:
-
-    void CtrlCLibrary::ResetCtrlCHandler(unsigned int id);
-
+```cpp
+void CtrlCLibrary::ResetCtrlCHandler(unsigned int id);
+```
 id - handler identifier, returned by CtrlCLibrary::SetCtrlCHandler.
 
 ### Installing
