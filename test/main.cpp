@@ -26,7 +26,7 @@ SOFTWARE.
 #include <condition_variable>
 #include <mutex>
 
-#include "../src/ctrl-c.h"
+#include "ctrl-c.h"
 
 int main()
 {
@@ -38,22 +38,26 @@ int main()
   unsigned int handler_id = CtrlCLibrary::SetCtrlCHandler([&catches, &wait_lock, &wait_var](enum CtrlCLibrary::CtrlSignal event) -> bool {
     switch (event) {
       case CtrlCLibrary::kCtrlCSignal:
-        std::cout << "Catch Ctrl+C" << std::endl;
+        std::cout << "Caught Ctrl+C" << std::endl;
+        std::lock_guard<std::mutex> locker(wait_lock);
+        ++catches;
+        wait_var.notify_all();
     }
-    std::lock_guard<std::mutex> locker(wait_lock);
-    ++catches;
-    wait_var.notify_all();
     return true;
   });
   if (handler_id == CtrlCLibrary::kErrorID) {
     std::cerr << "Can't set ctrl+c handler" << std::endl;
-    return 0;
+    return 1;
   }
+
   std::cout << "Press Ctrl+C " << kMaxCatches << " times" << std::endl;
   std::unique_lock<std::mutex> locker(wait_lock);
-  wait_var.wait(locker, [&catches, kMaxCatches](){
+  wait_var.wait(locker, [&catches](){
     return catches >= kMaxCatches;
   });
+  std::cout << "All Ctrl+C's pressed" << std::endl;
+
   CtrlCLibrary::ResetCtrlCHandler(handler_id);
+
   return 0;
 }
