@@ -52,7 +52,7 @@ int main()
 
   std::cout << "Press Ctrl+C " << kMaxCatches << " times" << std::endl;
   std::unique_lock<std::mutex> locker(wait_lock);
-  wait_var.wait(locker, [&catches](){
+  wait_var.wait(locker, [&catches, kMaxCatches](){
     return catches >= kMaxCatches;
   });
   std::cout << "All Ctrl+C's pressed" << std::endl;
