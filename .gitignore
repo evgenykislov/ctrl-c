@@ -34,3 +34,4 @@
 
 build-*/
 /test/CMakeLists.txt.user
+/test/build*/
